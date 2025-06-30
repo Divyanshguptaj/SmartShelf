@@ -1,44 +1,45 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white text-gray-800">
-      <nav className="flex justify-between items-center px-6 py-4 bg-[#0071dc] text-white shadow-md">
-        <h1 className="text-2xl font-bold">SmartShelf</h1>
-        <button className="bg-white text-[#0071dc] px-4 py-2 rounded-md font-semibold hover:bg-gray-100 transition">
-          Login
-        </button>
-      </nav>
+    <div className="min-h-screen bg-blue-100 flex flex-col justify-between">
+      {/* Navbar */}
+      <div className="bg-blue-600 text-white p-4 text-2xl font-bold">
+        SmartShelf
+      </div>
 
-      <div className="flex flex-col items-center justify-center px-6 text-center mt-16 space-y-8">
-        <h2 className="text-3xl font-bold max-w-2xl">
-          Helping customers flag empty shelves and ensuring faster restocking by staff.
-        </h2>
-        <p className="text-lg text-gray-600 max-w-md">
-          Choose your role to get started.
-        </p>
-
-        <div className="flex space-x-6">
-          <button
-            onClick={() => navigate("/customer")}
-            className="bg-[#0071dc] text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-[#005bb5] transition"
-          >
-            I’m a Customer
-          </button>
-          <button
-            onClick={() => navigate("/staff")}
-            className="bg-[#ffc220] text-black px-6 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-400 transition"
-          >
-            I’m Staff
-          </button>
+      {/* Main Content */}
+      <div className="flex-grow flex justify-center items-center">
+        <div className="bg-white bg-opacity-40 backdrop-blur-lg p-10 rounded-2xl shadow-xl text-center w-[90%] max-w-4xl">
+          <h1 className="text-3xl md:text-4xl font-bold text-blue-800 leading-snug tracking-tight mb-4">
+            Helping customers flag empty shelves <br /> for faster restocking by staff.
+          </h1>
+          <p className="text-gray-700 mb-6">
+            Choose your role to get started and make Walmart shopping better for everyone!
+          </p>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => navigate('/customer')}
+              className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition"
+            >
+              I’m a Customer
+            </button>
+            <button
+              onClick={() => navigate('/staff')}
+              className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-500 transition"
+            >
+              I’m Staff
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div className="mt-12 text-sm text-gray-500">
-          SmartShelf helps Walmart ensure real-time shelf updates for better customer satisfaction.
-        </div>
+      {/* Footer */}
+      <div className="bg-blue-600 text-white text-sm text-center p-3 font-medium tracking-wide">
+        SmartShelf helps Walmart ensure real-time shelf updates for better customer satisfaction.
       </div>
     </div>
   );
