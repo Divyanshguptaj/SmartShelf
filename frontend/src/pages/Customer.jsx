@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Camera, Upload, X, CheckCircle, Star } from "lucide-react";
 
 // ProductSearch Component with improved dropdown functionality
@@ -238,7 +238,7 @@ const ProductSearch = () => {
 };
 
 // ShelfStatus Component with Camera Feature
-const ShelfStatus = ({ onFlag }) => {
+const ShelfStatus = ({ onFlag, currentPoints }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -301,11 +301,7 @@ const ShelfStatus = ({ onFlag }) => {
 
     try {
       // Step 1: Get user ID from localStorage or fallback
-      let userId = localStorage.getItem("userId");
-      if (!userId) {
-        userId = "6866de81c69f564b34c20c03"; // fallback dummy user ID
-      }
-
+      let email = localStorage.getItem("email");
       // Step 2: Convert base64 to Blob
       const blob = await (await fetch(selectedImage)).blob();
       const file = new File([blob], "shelf.jpg", { type: blob.type });
@@ -315,7 +311,7 @@ const ShelfStatus = ({ onFlag }) => {
       formData.append("shelfCode", "A-12");
       formData.append("priority", "high");
       formData.append("image", file); // single file
-      formData.append("userId", userId); // append userId
+      formData.append("email", email); // append userId
 
       // Step 4: Send POST request
       const response = await fetch("http://localhost:4000/customer/flagItem", {
@@ -327,7 +323,7 @@ const ShelfStatus = ({ onFlag }) => {
       console.log("Flag Item Response:", result);
 
       if (response.ok) {
-        onFlag(); // show points
+        onFlag(currentPoints); // Pass current points to show notification
       } else {
         alert(result?.message || "Failed to flag item.");
       }
@@ -464,46 +460,37 @@ const ShelfStatus = ({ onFlag }) => {
   );
 };
 
-// PointsCard Component
-const PointsCard = () => {
+// NotificationCard Component
+const NotificationCard = ({ currentPoints }) => {
   return (
-    <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg p-6">
+    <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-green-800 flex items-center gap-2">
-          <CheckCircle className="text-green-600" size={24} />
-          Great Job! 🎉
+        <h3 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+          <CheckCircle className="text-blue-600" size={24} />
+          Report Submitted! 📤
         </h3>
-        {/* <div className="flex items-center gap-1 text-yellow-500">
-          <Star fill="currentColor" size={20} />
-          <Star fill="currentColor" size={20} />
-          <Star fill="currentColor" size={20} />
-          <Star fill="currentColor" size={20} />
-          <Star fill="currentColor" size={20} />
-        </div> */}
       </div>
 
-      <p className="text-green-700 mb-4">
-        Thank you for helping us maintain our shelves!
+      <p className="text-blue-700 mb-4">
+        Thank you for reporting the empty shelf! Your report has been successfully submitted to our team.
       </p>
 
-      <div className="bg-white rounded-lg p-4 shadow-sm">
+      <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-green-800 font-semibold">
-            Green Points Earned:
-          </span>
-          <span className="text-2xl font-bold text-green-600">+50</span>
+          <span className="text-blue-800 font-semibold">Current Points:</span>
+          <span className="text-2xl font-bold text-blue-600">{currentPoints}</span>
         </div>
-        <div className="flex justify-between items-center text-sm text-gray-600">
-          <span>Total Points:</span>
-          <span className="font-semibold">1,250</span>
+        <div className="text-sm text-gray-600">
+          <p className="mb-1">🎯 <strong>You'll earn +50 points</strong> when an employee marks this task as completed!</p>
+          <p>💡 Keep flagging empty shelves to earn more rewards</p>
         </div>
       </div>
 
-      {/* <div className="mt-4 text-center">
-        <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
-          View Rewards Catalog
-        </button>
-      </div> */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <p className="text-yellow-800 text-sm">
+          <strong>⏰ What's next?</strong> Our team will restock this shelf soon. Points will be added automatically to your account once completed.
+        </p>
+      </div>
     </div>
   );
 };
@@ -511,13 +498,64 @@ const PointsCard = () => {
 // Main Customer Component
 const Customer = () => {
   const [hasContributed, setHasContributed] = useState(false);
+  const [currentPoints, setCurrentPoints] = useState(0);
+  const [isLoadingPoints, setIsLoadingPoints] = useState(true);
+
+  // Fetch current points when component mounts
+  useEffect(() => {
+    fetchCurrentPoints();
+  }, []);
+
+  const fetchCurrentPoints = async () => {
+    try {
+      setIsLoadingPoints(true);
+      
+      // Get user ID from localStorage or fallback
+      let email = localStorage.getItem("email");
+      const response = await fetch(`http://localhost:4000/customer/fetchPoints?email=${email}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.points !== undefined) {
+        setCurrentPoints(result.points);
+      } else {
+        console.error("Failed to fetch points:", result);
+        // Set default points if API fails
+        setCurrentPoints(1200);
+      }
+    } catch (error) {
+      console.error("Error fetching points:", error);
+      // Set default points if API fails
+      setCurrentPoints(1200);
+    } finally {
+      setIsLoadingPoints(false);
+    }
+  };
+
+  const handleFlag = (points) => {
+    setHasContributed(true);
+    setCurrentPoints(points);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-blue-50 to-white p-6">
       {/* Header */}
       <div className="bg-blue-600 text-white py-4 px-6 rounded-lg shadow-md mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">🛒 SmartShelf by Walmart</h1>
-        <span className="text-sm font-medium">📍 Bengaluru #1293</span>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-sm opacity-90">Your Points</p>
+            <p className="font-bold text-lg">
+              {isLoadingPoints ? "Loading..." : currentPoints}
+            </p>
+          </div>
+          <span className="text-sm font-medium">📍 Bengaluru #1293</span>
+        </div>
       </div>
 
       {/* Promo */}
@@ -530,8 +568,8 @@ const Customer = () => {
       {/* Main Card */}
       <div className="max-w-4xl mx-auto bg-white bg-opacity-90 backdrop-blur-md rounded-lg shadow p-6 space-y-6">
         <ProductSearch />
-        <ShelfStatus onFlag={() => setHasContributed(true)} />
-        {hasContributed && <PointsCard />}
+        <ShelfStatus onFlag={handleFlag} currentPoints={currentPoints} />
+        {hasContributed && <NotificationCard currentPoints={currentPoints} />}
       </div>
 
       {/* Footer */}
